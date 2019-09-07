@@ -43,21 +43,6 @@ func TestSuccess(t *testing.T) {
 	}
 }
 
-func TestTimeout(t *testing.T) {
-	e := NewBackoff(10, 100*time.Millisecond)
-	e.strategy = func(e *exp) time.Duration {
-		return 110 * time.Millisecond
-	}
-	n := 0
-	for e.Do() {
-		e.Wait()
-		n++
-	}
-	if n > 1 {
-		t.Errorf("Expected only one call before timeout got %d", n)
-	}
-}
-
 func BenchmarkWaitForFullJitter(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		e := NewBackoff(20, 10*time.Second)
