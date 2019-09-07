@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
+
 type strategy func(e *exp) time.Duration
 
 //https://aws.amazon.com/de/blogs/architecture/exponential-backoff-and-jitter/
@@ -13,13 +15,13 @@ type strategy func(e *exp) time.Duration
 // DecorrelatedJitter
 var DecorrelatedJitter = func(e *exp) time.Duration {
 	ex := math.Exp2(float64(e.n))
-	jitter := rand.Int63n(int64(ex) / 2)
+	jitter := rnd.Int63n(int64(ex) / 2)
 	return time.Duration(jitter+int64(ex/2)) * time.Millisecond
 }
 
 var FullJitter = func(e *exp) time.Duration {
 	ex := math.Exp2(float64(e.n))
-	jitter := rand.Int63n(int64(ex))
+	jitter := rnd.Int63n(int64(ex))
 	return time.Duration(jitter) * time.Millisecond
 }
 
@@ -55,6 +57,14 @@ func (e *exp) Wait() time.Duration {
 
 func (e *exp) Success() {
 	e.done = true
+}
+
+func (e *exp) SetStrategy(strat strategy) {
+	e.strategy = strat
+}
+
+func (e *exp) Failed() bool {
+	return e.n >= e.retries && !e.done
 }
 
 func NewBackoff(retries int) *exp {

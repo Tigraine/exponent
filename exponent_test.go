@@ -42,6 +42,22 @@ func TestSuccess(t *testing.T) {
 	}
 }
 
+func TestFailed(t *testing.T) {
+	e := NewBackoff(2)
+	if e.Failed() == true {
+		t.Errorf("Expected failed to be false got true")
+	}
+	e.Do()
+	e.Do()
+	if e.Failed() == false {
+		t.Errorf("Expected failed to be true after 2 Do but got false")
+	}
+	e.Success()
+	if e.Failed() == true {
+		t.Errorf("Expected failed to be false after 2 Do but call to success - got true")
+	}
+}
+
 func BenchmarkWaitForFullJitter(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		e := NewBackoff(20)
