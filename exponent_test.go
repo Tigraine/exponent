@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestExponentialBackoff(t *testing.T) {
+func TestExponentialBackoffRetries(t *testing.T) {
 	e := NewExponent(13, 10*time.Second)
 	e.strategy = LinearBackoff
 	var n int
@@ -40,6 +40,21 @@ func TestSuccess(t *testing.T) {
 	e.Success()
 	if e.done != true {
 		t.Errorf("Expected done to be true got %v", e.done)
+	}
+}
+
+func TestTimeout(t *testing.T) {
+	e := NewExponent(10, 100*time.Millisecond)
+	e.strategy = func(e *exp) time.Duration {
+		return 110 * time.Millisecond
+	}
+	n := 0
+	for e.Do() {
+		e.Wait()
+		n++
+	}
+	if n > 1 {
+		t.Errorf("Expected only one call before timeout got %d", n)
 	}
 }
 

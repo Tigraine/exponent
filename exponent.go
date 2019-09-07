@@ -34,9 +34,21 @@ type exp struct {
 	max      time.Duration
 	strategy strategy
 	done     bool
+	timeout  *time.Timer
+}
+
+func (e *exp) start() {
+	e.timeout = time.NewTimer(e.max)
+	go func() {
+		<-e.timeout.C
+		e.n = e.retries
+	}()
 }
 
 func (e *exp) Do() bool {
+	if e.n == 0 {
+		e.start()
+	}
 	e.n++
 	return !e.done && e.n <= e.retries
 }
