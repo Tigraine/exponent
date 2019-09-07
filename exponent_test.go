@@ -2,11 +2,10 @@ package exponent
 
 import (
 	"testing"
-	"time"
 )
 
 func TestExponentialBackoffRetries(t *testing.T) {
-	e := NewBackoff(13, 10*time.Second)
+	e := NewBackoff(13)
 	e.strategy = LinearBackoff
 	var n int
 	t.Log("starting")
@@ -21,7 +20,7 @@ func TestExponentialBackoffRetries(t *testing.T) {
 }
 
 func TestExponentialBackoffStopsOnSuccess(t *testing.T) {
-	e := NewBackoff(10, 10*time.Second)
+	e := NewBackoff(10)
 
 	var n int
 	for e.Do() {
@@ -36,7 +35,7 @@ func TestExponentialBackoffStopsOnSuccess(t *testing.T) {
 }
 
 func TestSuccess(t *testing.T) {
-	e := NewBackoff(10, 10*time.Second)
+	e := NewBackoff(10)
 	e.Success()
 	if e.done != true {
 		t.Errorf("Expected done to be true got %v", e.done)
@@ -45,7 +44,7 @@ func TestSuccess(t *testing.T) {
 
 func BenchmarkWaitForFullJitter(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		e := NewBackoff(20, 10*time.Second)
+		e := NewBackoff(20)
 		e.strategy = FullJitter
 		for e.Do() {
 			e.WaitFor()
@@ -54,7 +53,7 @@ func BenchmarkWaitForFullJitter(b *testing.B) {
 }
 func BenchmarkWaitForDecorrelatedJitter(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		e := NewBackoff(20, 10*time.Second)
+		e := NewBackoff(20)
 		e.strategy = DecorrelatedJitter
 		for e.Do() {
 			e.WaitFor()
@@ -63,7 +62,7 @@ func BenchmarkWaitForDecorrelatedJitter(b *testing.B) {
 }
 func BenchmarkWaitForExponentialBackoff(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		e := NewBackoff(20, 10*time.Second)
+		e := NewBackoff(20)
 		e.strategy = ExponentialBackoff
 		for e.Do() {
 			e.WaitFor()
@@ -72,7 +71,7 @@ func BenchmarkWaitForExponentialBackoff(b *testing.B) {
 }
 func BenchmarkWaitForLinearBackoff(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		e := NewBackoff(20, 10*time.Second)
+		e := NewBackoff(20)
 		e.strategy = ExponentialBackoff
 		for e.Do() {
 			e.WaitFor()

@@ -8,6 +8,9 @@ import (
 
 type strategy func(e *exp) time.Duration
 
+//https://aws.amazon.com/de/blogs/architecture/exponential-backoff-and-jitter/
+
+// DecorrelatedJitter
 var DecorrelatedJitter = func(e *exp) time.Duration {
 	ex := math.Exp2(float64(e.n))
 	jitter := rand.Int63n(int64(ex) / 2)
@@ -31,10 +34,8 @@ var LinearBackoff = func(e *exp) time.Duration {
 type exp struct {
 	n        int
 	retries  int
-	max      time.Duration
 	strategy strategy
 	done     bool
-	timeout  *time.Timer
 }
 
 func (e *exp) Do() bool {
@@ -56,10 +57,9 @@ func (e *exp) Success() {
 	e.done = true
 }
 
-func NewBackoff(retries int, max time.Duration) *exp {
+func NewBackoff(retries int) *exp {
 	return &exp{
 		retries:  retries,
-		max:      max,
 		strategy: DecorrelatedJitter,
 	}
 }
