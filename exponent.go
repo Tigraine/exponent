@@ -67,7 +67,7 @@ func (e *exp) Success() {
 	e.done = true
 }
 
-func NewExponent(retries int, max time.Duration) *exp {
+func NewBackoff(retries int, max time.Duration) *exp {
 	return &exp{
 		retries:  retries,
 		max:      max,
