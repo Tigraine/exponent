@@ -13,14 +13,17 @@ var DecorrelatedJitter = func(e *exp) time.Duration {
 	jitter := rand.Int63n(int64(ex) / 2)
 	return time.Duration(jitter+int64(ex/2)) * time.Millisecond
 }
+
 var FullJitter = func(e *exp) time.Duration {
 	ex := math.Exp2(float64(e.n))
 	jitter := rand.Int63n(int64(ex))
 	return time.Duration(jitter) * time.Millisecond
 }
+
 var ExponentialBackoff = func(e *exp) time.Duration {
 	return time.Duration(math.Exp2(float64(e.n))) * time.Millisecond
 }
+
 var LinearBackoff = func(e *exp) time.Duration {
 	return time.Duration(e.n*100) * time.Millisecond
 }
@@ -53,5 +56,9 @@ func (e *exp) Success() {
 }
 
 func NewExponent(retries int, max time.Duration) *exp {
-	return &exp{retries: retries, max: max, strategy: DecorrelatedJitter}
+	return &exp{
+		retries:  retries,
+		max:      max,
+		strategy: DecorrelatedJitter,
+	}
 }
