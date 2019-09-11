@@ -33,6 +33,16 @@ var LinearBackoff = func(e Exp) time.Duration {
 	return time.Duration(e.N*100) * time.Millisecond
 }
 
+var WithMinimum = func(strat Strategy, min time.Duration) func(e Exp) time.Duration {
+	return func(e Exp) time.Duration {
+		x := strat(e)
+		if x > min {
+			return x
+		}
+		return min
+	}
+}
+
 type Exp struct {
 	N        int
 	retries  int
@@ -67,9 +77,11 @@ func (e *Exp) Failed() bool {
 	return e.N >= e.retries && !e.done
 }
 
+const DEFAULT_MIN_DELAY = 150 * time.Millisecond
+
 func NewBackoff(retries int) *Exp {
 	return &Exp{
 		retries:  retries,
-		strategy: DecorrelatedJitter,
+		strategy: WithMinimum(DecorrelatedJitter, DEFAULT_MIN_DELAY),
 	}
 }
