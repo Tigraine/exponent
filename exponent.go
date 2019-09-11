@@ -36,10 +36,10 @@ var LinearBackoff = func(e Exp) time.Duration {
 var WithMinimum = func(strat Strategy, min time.Duration) func(e Exp) time.Duration {
 	return func(e Exp) time.Duration {
 		x := strat(e)
-		if x > min {
-			return x
+		if x < min {
+			return min
 		}
-		return min
+		return x
 	}
 }
 
