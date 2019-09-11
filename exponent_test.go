@@ -11,7 +11,7 @@ func TestExponentialBackoffRetries(t *testing.T) {
 	t.Log("starting")
 	for e.Do() {
 		n++
-		t.Logf("Sleeping for %v for run %d", e.WaitFor(), e.n)
+		t.Logf("Sleeping for %v for run %d", e.WaitFor(), e.N)
 	}
 	t.Log("finished")
 	if n != 13 {

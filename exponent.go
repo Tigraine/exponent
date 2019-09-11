@@ -8,67 +8,67 @@ import (
 
 var rnd = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-type strategy func(e *exp) time.Duration
+type Strategy func(e Exp) time.Duration
 
 //https://aws.amazon.com/de/blogs/architecture/exponential-backoff-and-jitter/
 
 // DecorrelatedJitter
-var DecorrelatedJitter = func(e *exp) time.Duration {
-	ex := math.Exp2(float64(e.n))
+var DecorrelatedJitter = func(e Exp) time.Duration {
+	ex := math.Exp2(float64(e.N))
 	jitter := rnd.Int63n(int64(ex) / 2)
 	return time.Duration(jitter+int64(ex/2)) * time.Millisecond
 }
 
-var FullJitter = func(e *exp) time.Duration {
-	ex := math.Exp2(float64(e.n))
+var FullJitter = func(e Exp) time.Duration {
+	ex := math.Exp2(float64(e.N))
 	jitter := rnd.Int63n(int64(ex))
 	return time.Duration(jitter) * time.Millisecond
 }
 
-var ExponentialBackoff = func(e *exp) time.Duration {
-	return time.Duration(math.Exp2(float64(e.n))) * time.Millisecond
+var ExponentialBackoff = func(e Exp) time.Duration {
+	return time.Duration(math.Exp2(float64(e.N))) * time.Millisecond
 }
 
-var LinearBackoff = func(e *exp) time.Duration {
-	return time.Duration(e.n*100) * time.Millisecond
+var LinearBackoff = func(e Exp) time.Duration {
+	return time.Duration(e.N*100) * time.Millisecond
 }
 
-type exp struct {
-	n        int
+type Exp struct {
+	N        int
 	retries  int
-	strategy strategy
+	strategy Strategy
 	done     bool
 }
 
-func (e *exp) Do() bool {
-	e.n++
-	return !e.done && e.n <= e.retries
+func (e *Exp) Do() bool {
+	e.N++
+	return !e.done && e.N <= e.retries
 }
 
-func (e *exp) WaitFor() time.Duration {
-	return e.strategy(e)
+func (e *Exp) WaitFor() time.Duration {
+	return e.strategy(*e)
 }
 
-func (e *exp) Wait() time.Duration {
+func (e *Exp) Wait() time.Duration {
 	sleep := e.WaitFor()
 	time.Sleep(sleep)
 	return sleep
 }
 
-func (e *exp) Success() {
+func (e *Exp) Success() {
 	e.done = true
 }
 
-func (e *exp) SetStrategy(strat strategy) {
+func (e *Exp) SetStrategy(strat Strategy) {
 	e.strategy = strat
 }
 
-func (e *exp) Failed() bool {
-	return e.n >= e.retries && !e.done
+func (e *Exp) Failed() bool {
+	return e.N >= e.retries && !e.done
 }
 
-func NewBackoff(retries int) *exp {
-	return &exp{
+func NewBackoff(retries int) *Exp {
+	return &Exp{
 		retries:  retries,
 		strategy: DecorrelatedJitter,
 	}
