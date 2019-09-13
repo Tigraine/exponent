@@ -2,6 +2,7 @@ package exponent
 
 import (
 	"testing"
+	"time"
 )
 
 func TestExponentialBackoffRetries(t *testing.T) {
@@ -55,6 +56,18 @@ func TestFailed(t *testing.T) {
 	e.Success()
 	if e.Failed() == true {
 		t.Errorf("Expected failed to be false after 2 Do but call to success - got true")
+	}
+}
+
+func TestWithMinimum(t *testing.T) {
+	higher := func(e Exp) time.Duration { return 300 * time.Millisecond }
+	lower := func(e Exp) time.Duration { return 1 * time.Millisecond }
+
+	if delay := WithMinimum(higher, 50*time.Millisecond)(Exp{}); delay != 300*time.Millisecond {
+		t.Errorf("Expected WithMinimum to use max of 300ms got: %v", delay)
+	}
+	if delay := WithMinimum(lower, 50*time.Millisecond)(Exp{}); delay != 50*time.Millisecond {
+		t.Errorf("Expected WithMinimum to use min of 50 got: %v", delay)
 	}
 }
 
