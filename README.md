@@ -11,7 +11,7 @@ Supported strategies:
 
 ## Usage
 
-```
+``` go
 import (
   "os"
 
