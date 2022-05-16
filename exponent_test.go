@@ -101,9 +101,19 @@ func BenchmarkWaitForExponentialBackoff(b *testing.B) {
 func BenchmarkWaitForLinearBackoff(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		e := NewBackoff(20)
-		e.strategy = ExponentialBackoff
+		e.strategy = LinearBackoff
 		for e.Do() {
 			e.WaitFor()
+		}
+	}
+}
+
+func BenchmarkNoWait(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		e := NewBackoff(20)
+		e.SetStrategy(ExponentialBackoff)
+		for e.Do() {
+			e.Success()
 		}
 	}
 }
