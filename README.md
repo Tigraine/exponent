@@ -1,5 +1,10 @@
 # Exponent - Exponential Backoff for Go
 
+[![Release](https://img.shields.io/github/release/tigraine/exponent.svg?style=flat-square)](https://github.com/tigraine/exponent/releases/latest)
+[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
+[![GoDoc](https://godoc.org/github.com/tigraine/exponent?status.svg)](http://godoc.org/github.com/tigraine/exponent)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tigraine/exponent)](https://goreportcard.com/report/github.com/tigraine/exponent)
+
 Library that provides various exponential backoff functions for your code.
 
 Implementation of various exponential backoff strategies as outlined and tested in the AWS Blog: https://aws.amazon.com/de/blogs/architecture/exponential-backoff-and-jitter/
