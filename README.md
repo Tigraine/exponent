@@ -19,7 +19,8 @@ import (
 )
 
 func main() {
-  e := exponent.NewBackoff(12)
+  ctx := context.TODO()
+  e := exponent.NewBackoff(12).WithContext(ctx)
   for e.Do() {
     // Do your work
     err := Work()
