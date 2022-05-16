@@ -1,6 +1,7 @@
 package exponent
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -40,6 +41,33 @@ func TestSuccess(t *testing.T) {
 	e.Success()
 	if e.done != true {
 		t.Errorf("Expected done to be true got %v", e.done)
+	}
+}
+
+func TestWithContextAndTimeout(t *testing.T) {
+	deadline, cancelFunc := context.WithTimeout(context.TODO(), 200*time.Millisecond)
+	defer cancelFunc()
+	e := NewBackoff(10).WithContext(deadline)
+	for e.Do() {
+		// do nothing - we keep looping
+		e.Wait()
+	}
+	if !e.Failed() {
+		t.Errorf("expected to fail due to timeout")
+	}
+}
+
+func TestWithContextSuccess(t *testing.T) {
+	deadline, cancelFunc := context.WithTimeout(context.TODO(), 200*time.Millisecond)
+	defer cancelFunc()
+	e := NewBackoff(10).WithContext(deadline)
+	for e.Do() {
+		// do nothing - we keep looping
+		e.Wait()
+		e.Success()
+	}
+	if e.Failed() {
+		t.Errorf("expected to not fail due to timeout")
 	}
 }
 

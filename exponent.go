@@ -1,6 +1,7 @@
 package exponent
 
 import (
+	"context"
 	"math"
 	"math/rand"
 	"time"
@@ -48,11 +49,12 @@ type Exp struct {
 	retries  int
 	strategy Strategy
 	done     bool
+	ctx      context.Context
 }
 
 func (e *Exp) Do() bool {
 	e.N++
-	return !e.done && e.N <= e.retries
+	return !e.done && e.N <= e.retries && e.ctx.Err() == nil
 }
 
 func (e *Exp) WaitFor() time.Duration {
@@ -61,8 +63,12 @@ func (e *Exp) WaitFor() time.Duration {
 
 func (e *Exp) Wait() time.Duration {
 	sleep := e.WaitFor()
-	time.Sleep(sleep)
-	return sleep
+	select {
+	case <-time.After(sleep):
+		return sleep
+	case <-e.ctx.Done():
+		return sleep
+	}
 }
 
 func (e *Exp) Success() {
@@ -74,7 +80,15 @@ func (e *Exp) SetStrategy(strat Strategy) {
 }
 
 func (e *Exp) Failed() bool {
+	if e.ctx.Err() != nil {
+		return !e.done
+	}
 	return e.N >= e.retries && !e.done
+}
+
+func (e *Exp) WithContext(ctx context.Context) *Exp {
+	e.ctx = ctx
+	return e
 }
 
 const DEFAULT_MIN_DELAY = 150 * time.Millisecond
@@ -83,5 +97,6 @@ func NewBackoff(retries int) *Exp {
 	return &Exp{
 		retries:  retries,
 		strategy: WithMinimum(DecorrelatedJitter, DEFAULT_MIN_DELAY),
+		ctx:      context.TODO(),
 	}
 }
