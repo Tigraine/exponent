@@ -2,6 +2,7 @@ package exponent
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 )
@@ -18,6 +19,46 @@ func TestExponentialBackoffRetries(t *testing.T) {
 	t.Log("finished")
 	if n != 13 {
 		t.Errorf("Expected 13 loops but only got %d", n)
+	}
+}
+
+func TestNewApi(t *testing.T) {
+	e := NewExponent(context.TODO(), 10)
+	result, err := e.Try(func() (any, error) {
+		return "foo", nil
+	})
+	if err != nil {
+		t.Errorf("expected nil got %v", err)
+	}
+	if result != "foo" {
+		t.Errorf("expected result 'foo' got '%s'", result)
+	}
+}
+func TestNewApiRetry(t *testing.T) {
+	e := NewExponent(context.TODO(), 10).Strategy(DecorrelatedJitter)
+	attempts := 0
+	result, err := e.Try(func() (any, error) {
+		attempts++
+		if attempts < 4 {
+			return nil, errors.New("fail")
+		}
+		return "foo", nil
+	})
+	if err != nil {
+		t.Errorf("expected nil got %v", err)
+	}
+	if result != "foo" {
+		t.Errorf("expected result 'foo' got '%s'", result)
+	}
+}
+
+func TestNewApiMaxRetry(t *testing.T) {
+	e := NewExponent(context.TODO(), 1).Strategy(DecorrelatedJitter)
+	_, err := e.Try(func() (any, error) {
+		return nil, errors.New("foo")
+	})
+	if err.Error() != errors.New("foo").Error() {
+		t.Errorf("expected error foo got %v", err)
 	}
 }
 
@@ -88,13 +129,13 @@ func TestFailed(t *testing.T) {
 }
 
 func TestWithMinimum(t *testing.T) {
-	higher := func(e Exp) time.Duration { return 300 * time.Millisecond }
-	lower := func(e Exp) time.Duration { return 1 * time.Millisecond }
+	higher := func(attempt int) time.Duration { return 300 * time.Millisecond }
+	lower := func(attempt int) time.Duration { return 1 * time.Millisecond }
 
-	if delay := WithMinimum(higher, 50*time.Millisecond)(Exp{}); delay != 300*time.Millisecond {
+	if delay := WithMinimum(higher, 50*time.Millisecond)(0); delay != 300*time.Millisecond {
 		t.Errorf("Expected WithMinimum to use max of 300ms got: %v", delay)
 	}
-	if delay := WithMinimum(lower, 50*time.Millisecond)(Exp{}); delay != 50*time.Millisecond {
+	if delay := WithMinimum(lower, 50*time.Millisecond)(0); delay != 50*time.Millisecond {
 		t.Errorf("Expected WithMinimum to use min of 50 got: %v", delay)
 	}
 }

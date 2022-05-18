@@ -14,6 +14,29 @@ Supported strategies:
 - Full Jitter (exponential + random jitter)
 - Decorrelated Jitter (exponential + partial random jitter)
 
+## Usage v2
+
+The v2 API is a adapter to the old API that's inspired by classic libraries like https://github.com/matryer/try and should feel more idiomatic.
+
+```go
+import (
+  "os"
+
+  "github.com/tigraine/exponent"
+)
+
+func main() {
+  ctx := context.TODO()
+  e := exponent.NewExponent(ctx, 12).WithStrategy(LinearBackoff)
+  result, err := e.Try(func() (any, error) {
+	  return Work()
+  })
+  if err != nil {
+	  os.Exit(1)
+  }
+}
+```
+
 ## Usage
 
 ``` go

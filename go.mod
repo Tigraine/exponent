@@ -1,3 +1,3 @@
 module github.com/tigraine/exponent
 
-go 1.14
+go 1.18
